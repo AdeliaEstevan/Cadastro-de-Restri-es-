@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Energisa · Gestão de Sobreaviso | Premium v5.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --energisa-blue: #003A6B;
+            --energisa-blue-dark: #002D5A;
+            --energisa-blue-light: #E6F0F8;
+            --energisa-blue-glow: rgba(0, 58, 107, 0.1);
+            --energisa-yellow: #FEDB00;
+            --energisa-yellow-dark: #E5C100;
+            --energisa-yellow-glow: rgba(254, 219, 0, 0.2);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-glow: 0 0 15px rgba(0, 58, 107, 0.2);
+            --radius: 1rem;
+            --radius-lg: 1.25rem;
+            --radius-xl: 1.5rem;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(0, 58, 107, 0.03) 0%, rgba(254, 219, 0, 0.02) 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><path fill="%23003A6B" d="M20,20 L30,10 L40,20 L30,30 Z M70,70 L80,60 L90,70 L80,80 Z M45,45 L55,35 L65,45 L55,55 Z"/></svg>');
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+
+        /* Tela de seleção inicial */
+        .screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, var(--energisa-blue) 0%, #001F3A 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            transition: var(--transition);
+            backdrop-filter: blur(0px);
+        }
+
+        .screen.hidden { display: none; }
+
+        .choice-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 2rem;
+            padding: 3rem 2.5rem;
+            max-width: 750px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            border-top: 5px solid var(--energisa-yellow);
+            animation: slideUp 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-energisa {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.5rem; margin-bottom: 1rem; position: relative;
+        }
+
+        .logo-icon { font-size: 3rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); animation: pulse 2s infinite; }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        .logo-text {
+            font-size: 1.8rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--energisa-blue) 0%, #002D5A 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        .choice-container h1 { font-size: 1.6rem; color: var(--energisa-blue); margin-bottom: 0.5rem; }
+        .choice-container > p { color: var(--gray-500); margin-bottom: 2rem; font-size: 0.95rem; }
+
+        .choice-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+
+        .choice-card {
+            background: white; border: 2px solid var(--gray-200);
+            border-radius: 1.5rem; padding: 2rem 1.5rem;
+            cursor: pointer; transition: var(--transition);
+            text-align: center; position: relative; overflow: hidden;
+        }
+
+        .choice-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--energisa-yellow), var(--energisa-blue));
+            transform: scaleX(0); transition: transform 0.3s ease;
+        }
+
+        .choice-card:hover::before { transform: scaleX(1); }
+        .choice-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--energisa-yellow);
+            box-shadow: var(--shadow-lg), 0 0 0 2px rgba(254, 219, 0, 0.2);
+        }
+
+        .choice-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .choice-card h3 { font-size: 1.3rem; color: var(--energisa-blue); margin-bottom: 0.5rem; font-weight: 700; }
+        .choice-card p { font-size: 0.85rem; color: var(--gray-500); }
+
+        @media (max-width: 680px) {
+            .choice-buttons { grid-template-columns: 1fr; }
+            .choice-container { padding: 2rem 1.5rem; margin: 1rem; }
+        }
+
+        /* Área principal */
+        .main-app { display: none; padding: 2rem; max-width: 1600px; margin: 0 auto; }
+        .main-app.visible { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Header */
+        .header {
+            margin-bottom: 2rem; padding-bottom: 1rem;
+            border-bottom: 3px solid var(--energisa-yellow); position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--energisa-blue) 0%, #002D5A 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            display: inline-flex; align-items: center; gap: 0.75rem;
+        }
+
+        .header h1::before {
+            content: "⚡"; font-size: 2.2rem; color: var(--energisa-yellow);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .header-subtitle { color: var(--gray-500); font-weight: 500; margin-top: 0.25rem; font-size: 0.9rem; }
+
+        /* Barra de usuário */
+        .user-badge-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem; border-radius: 1.25rem;
+            margin-bottom: 2rem; box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--energisa-yellow);
+            flex-wrap: wrap; gap: 1rem;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+
+        .user-avatar {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--energisa-blue-light) 0%, var(--energisa-blue) 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: white; box-shadow: var(--shadow-sm);
+        }
+
+        .role-badge {
+            background: var(--energisa-yellow);
+            padding: 0.3rem 1rem; border-radius: 2rem;
+            font-size: 0.75rem; font-weight: 700; color: var(--energisa-blue);
+        }
+
+        .role-badge-scada {
+            background: var(--energisa-blue-light); color: var(--energisa-blue);
+            padding: 0.3rem 1rem; border-radius: 2rem;
+            font-size: 0.75rem; font-weight: 700;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+            border-radius: 1.5rem; box-shadow: var(--shadow-md);
+            overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .card:hover { box-shadow: var(--shadow-lg), var(--shadow-glow); transform: translateY(-2px); }
+
+        .card-header {
+            padding: 1.25rem 1.75rem; border-bottom: 2px solid var(--gray-200);
+            background: rgba(255, 255, 255, 0.5);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.35rem; font-weight: 700; color: var(--energisa-blue);
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+
+        .card-body { padding: 1.75rem; }
+
+        /* Formulário */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; display: block; font-size: 0.9rem; }
+        .required { color: var(--danger); margin-left: 0.2rem; }
+        .optional-tag { background: var(--gray-100); color: var(--gray-500); font-size: 0.65rem; padding: 0.1rem 0.5rem; border-radius: 0.4rem; margin-left: 0.4rem; font-weight: 600; }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%; padding: 0.75rem 1rem;
+            border: 2px solid var(--gray-200); border-radius: 0.875rem;
+            font-size: 0.95rem; transition: var(--transition);
+            background: white; font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none; border-color: var(--energisa-yellow);
+            box-shadow: 0 0 0 3px var(--energisa-yellow-glow);
+        }
+
+        .form-input.error, .form-textarea.error {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        .form-input:disabled, .form-input[readonly] {
+            background: var(--gray-50); color: var(--gray-600); cursor: not-allowed;
+        }
+
+        .field-hint { font-size: 0.7rem; color: var(--gray-500); margin-top: 0.25rem; }
+
+        .field-error-msg {
+            font-size: 0.72rem; color: var(--danger);
+            margin-top: 0.25rem; display: none; font-weight: 500;
+        }
+
+        .field-error-msg.visible { display: block; animation: fadeIn 0.2s ease; }
+
+        /* Períodos */
+        .periods-container { max-height: 400px; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1rem; }
+
+        .period-card {
+            background: var(--energisa-blue-light); border-radius: 1.25rem;
+            padding: 1rem; margin-bottom: 1rem;
+            border: 1px solid rgba(0, 58, 107, 0.15);
+            transition: var(--transition); animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .period-card:hover { box-shadow: var(--shadow-sm); }
+
+        .period-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 0.75rem; padding-bottom: 0.5rem;
+            border-bottom: 1px dashed rgba(0, 58, 107, 0.2);
+        }
+
+        .period-title { font-weight: 600; color: var(--energisa-blue); font-size: 0.8rem; }
+
+        .period-row { display: grid; grid-template-columns: 1fr 0.9fr 0.9fr; gap: 0.8rem; margin-bottom: 0.75rem; }
+
+        @media (max-width: 680px) { .period-row { grid-template-columns: 1fr; gap: 0.6rem; } }
+
+        .period-field { display: flex; flex-direction: column; gap: 0.3rem; }
+        .period-field label { font-weight: 600; color: var(--energisa-blue); font-size: 0.7rem; }
+
+        .remove-period {
+            background: var(--danger); border: none; color: white;
+            padding: 0.5rem 1rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; transition: var(--transition);
+            font-size: 0.8rem; width: 100%;
+        }
+
+        .remove-period:hover { background: #dc2626; transform: scale(0.98); }
+
+        .btn-add-period {
+            background: white; border: 2px dashed var(--energisa-blue);
+            width: 100%; padding: 0.8rem; border-radius: 0.875rem;
+            font-weight: 600; color: var(--energisa-blue);
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+
+        .btn-add-period:hover { background: var(--energisa-blue-light); border-style: solid; }
+
+        /* Botões */
+        .btn {
+            padding: 0.7rem 1.5rem; border: none;
+            border-radius: 0.875rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.5rem; font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--energisa-blue) 0%, var(--energisa-blue-dark) 100%);
+            color: white; box-shadow: 0 2px 4px rgba(0, 58, 107, 0.2);
+        }
+
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); filter: brightness(1.05); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--energisa-yellow) 0%, var(--energisa-yellow-dark) 100%);
+            color: var(--energisa-blue);
+        }
+
+        .btn-secondary:hover { transform: translateY(-1px); filter: brightness(0.98); }
+
+        .btn-outline {
+            background: transparent; border: 2px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--energisa-blue); background: var(--energisa-blue-light);
+            color: var(--energisa-blue);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover { transform: translateY(-1px); filter: brightness(0.98); }
+
+        .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .form-actions button { flex: 1; }
+
+        /* Resumo do cadastro */
+        .summary-card {
+            background: linear-gradient(135deg, var(--energisa-blue-light) 0%, white 100%);
+            border-radius: 1rem; padding: 1rem; margin-top: 1rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .summary-title { font-weight: 700; color: var(--energisa-blue); margin-bottom: 0.5rem; font-size: 0.85rem; }
+        .summary-periods { font-size: 0.8rem; color: var(--gray-600); }
+
+        /* Lista de restrições do SCADA */
+        .my-restrictions { margin-top: 2rem; }
+
+        .my-restrictions-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
+        }
+
+        .my-restrictions-header h3 { font-size: 1.1rem; color: var(--energisa-blue); }
+
+        .restriction-badge {
+            background: var(--energisa-yellow);
+            padding: 0.25rem 0.75rem; border-radius: 2rem;
+            font-size: 0.75rem; font-weight: 600;
+        }
+
+        .restriction-item {
+            background: white; border-radius: 1rem;
+            padding: 1rem; margin-bottom: 0.75rem;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .restriction-item:hover {
+            border-color: var(--energisa-yellow);
+            box-shadow: var(--shadow-sm); transform: translateX(4px);
+        }
+
+        .restriction-date { font-weight: 700; color: var(--energisa-blue); margin-bottom: 0.5rem; }
+        .restriction-time { font-size: 0.85rem; color: var(--gray-600); margin-bottom: 0.25rem; }
+        .restriction-justify {
+            font-size: 0.75rem; color: var(--gray-500);
+            margin-top: 0.5rem; padding-top: 0.5rem;
+            border-top: 1px dashed var(--gray-200);
+        }
+
+        .empty-state {
+            text-align: center; padding: 3rem;
+            background: var(--gray-100); border-radius: 1.5rem;
+            color: var(--gray-500);
+        }
+
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+
+        /* Mensagens */
+        .mensagem-flutuante {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            background: var(--energisa-blue); color: white;
+            padding: 0.8rem 1.5rem; border-radius: 2rem;
+            z-index: 9999; animation: fadeSlide 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--energisa-yellow);
+            max-width: 500px;
+        }
+
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scroll personalizado */
+        .periods-container::-webkit-scrollbar { width: 6px; }
+        .periods-container::-webkit-scrollbar-track { background: var(--gray-200); border-radius: 3px; }
+        .periods-container::-webkit-scrollbar-thumb { background: var(--energisa-blue); border-radius: 3px; }
+
+        /* Nav Tabs */
+        .nav-tab { transition: var(--transition); position: relative; overflow: hidden; }
+        .nav-tab::after {
+            content: ''; position: absolute; bottom: 0; left: 50%;
+            width: 0; height: 2px; background: var(--energisa-yellow);
+            transition: var(--transition); transform: translateX(-50%);
+        }
+        .nav-tab.active::after { width: 80%; }
+        .nav-tab:hover:not(.active) { background: var(--energisa-blue-light); color: var(--energisa-blue); }
+
+        /* Estatísticas cards */
+        .stat-card { transition: var(--transition); }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .stat-value {
+            background: linear-gradient(135deg, var(--energisa-blue) 0%, #002D5A 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 29, 58, 0.6); backdrop-filter: blur(4px);
+            z-index: 5000;
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-content {
+            background: white; border-radius: 1.5rem;
+            width: 90%; max-width: 600px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            border-top: 5px solid var(--energisa-yellow);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.75rem; border-bottom: 2px solid var(--gray-200);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; background: white; z-index: 10;
+        }
+
+        .modal-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--energisa-blue); }
+
+        .modal-close {
+            background: var(--gray-100); border: none;
+            width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover { background: var(--danger); color: white; }
+        .modal-body { padding: 1.75rem; }
+        .modal-footer {
+            padding: 1rem 1.75rem; border-top: 1px solid var(--gray-200);
+            display: flex; gap: 0.75rem; justify-content: flex-end;
+            position: sticky; bottom: 0; background: white;
+        }
+
+        /* Ações inline */
+        .restriction-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+        .restriction-actions button {
+            flex: 1; padding: 0.4rem 0.75rem;
+            border-radius: 0.75rem; border: none;
+            font-size: 0.75rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+        }
+        .btn-edit-sm { background: var(--energisa-yellow); color: var(--energisa-blue); }
+        .btn-edit-sm:hover { filter: brightness(0.95); }
+        .btn-delete-sm { background: #fee2e2; color: var(--danger); }
+        .btn-delete-sm:hover { background: var(--danger); color: white; }
+
+        /* Calendário heatmap */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 0.75rem; }
+        .calendar-header-cell {
+            text-align: center; font-size: 0.65rem; font-weight: 700;
+            color: var(--gray-500); padding: 0.3rem 0;
+        }
+        .calendar-cell {
+            aspect-ratio: 1; border-radius: 0.4rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.6rem; font-weight: 600;
+            transition: var(--transition); cursor: default; position: relative;
+        }
+        .calendar-cell.empty { background: transparent; }
+        .calendar-cell.heat-0 { background: var(--gray-100); color: var(--gray-500); }
+        .calendar-cell.heat-1 { background: #dbeafe; color: var(--energisa-blue); }
+        .calendar-cell.heat-2 { background: #93c5fd; color: var(--energisa-blue-dark); }
+        .calendar-cell.heat-3 { background: var(--energisa-yellow); color: var(--energisa-blue-dark); font-weight: 800; }
+        .calendar-cell.heat-4 { background: var(--danger); color: white; font-weight: 800; }
+        .calendar-cell:hover:not(.empty) { transform: scale(1.15); box-shadow: var(--shadow-sm); }
+        .calendar-cell[data-tooltip]:hover::after {
+            content: attr(data-tooltip); position: absolute;
+            bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+            background: var(--gray-800); color: white;
+            padding: 0.25rem 0.5rem; border-radius: 0.4rem;
+            font-size: 0.6rem; white-space: nowrap; z-index: 10;
+        }
+
+        /* Loading spinner */
+        .btn-loading { pointer-events: none; opacity: 0.7; }
+        .btn-loading::after {
+            content: ''; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Overnight badge */
+        .overnight-badge {
+            display: inline-block; background: var(--energisa-blue);
+            color: white; font-size: 0.6rem;
+            padding: 0.1rem 0.4rem; border-radius: 0.4rem;
+            margin-left: 0.4rem; font-weight: 600;
+        }
+
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        /* Confirm dialog */
+        .confirm-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+        .confirm-actions button { flex: 1; }
+
+        /* Calendar nav */
+        .calendar-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .calendar-nav button {
+            background: var(--gray-100); border: none;
+            width: 32px; height: 32px; border-radius: 50%;
+            cursor: pointer; font-size: 1rem;
+            transition: var(--transition);
+        }
+        .calendar-nav button:hover { background: var(--energisa-blue-light); }
+        .calendar-nav span { font-weight: 700; color: var(--energisa-blue); font-size: 0.9rem; }
+
+        /* ====== ESTILOS NOVOS v5.0 ====== */
+
+        /* Tela de login centralizada */
+        .login-card-wrapper {
+            max-width: 450px; margin: 2rem auto;
+        }
+
+        /* Sistemas badges (ELIPSE/POWER/ADMS) */
+        .sistema-badge {
+            display: inline-flex; align-items: center;
+            background: var(--energisa-blue-light);
+            color: var(--energisa-blue);
+            padding: 0.25rem 0.7rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+            border: 1px solid rgba(0, 58, 107, 0.15);
+        }
+
+        .sistema-badge.sistema-elipse { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+        .sistema-badge.sistema-power { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        .sistema-badge.sistema-adms { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+
+        /* Checkbox de sistemas no formulário */
+        .sistemas-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem; margin-top: 0.5rem;
+        }
+
+        .sistema-check {
+            display: flex; align-items: center;
+            background: white; padding: 0.6rem 0.8rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 0.75rem;
+            cursor: pointer; transition: var(--transition);
+            font-size: 0.85rem; font-weight: 600;
+            gap: 0.5rem;
+        }
+
+        .sistema-check input[type="checkbox"] { cursor: pointer; accent-color: var(--energisa-blue); }
+        .sistema-check:hover { border-color: var(--energisa-yellow); background: var(--energisa-blue-light); }
+        .sistema-check.checked { border-color: var(--energisa-blue); background: var(--energisa-blue-light); color: var(--energisa-blue); }
+
+        @media (max-width: 680px) { .sistemas-grid { grid-template-columns: 1fr; } }
+
+        /* Card de colaborador */
+        .colab-card {
+            background: white; border-radius: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .colab-card:hover { border-color: var(--energisa-yellow); box-shadow: var(--shadow-md); }
+
+        .colab-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 0.5rem; margin-bottom: 0.5rem;
+        }
+
+        .colab-name { font-weight: 800; font-size: 1rem; color: var(--energisa-blue); }
+        .colab-matricula { font-size: 0.7rem; color: var(--gray-500); font-weight: 600; }
+        .colab-email { font-size: 0.75rem; color: var(--gray-600); }
+        .colab-tel { font-size: 0.75rem; color: var(--gray-600); }
+        .colab-sistemas { margin-top: 0.5rem; }
+
+        .status-badge {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: 700;
+        }
+        .status-ativo { background: #d1fae5; color: #065f46; }
+        .status-inativo { background: #fee2e2; color: #991b1b; }
+
+        .colab-actions {
+            display: flex; gap: 0.4rem; margin-top: 0.75rem; flex-wrap: wrap;
+        }
+        .colab-actions button {
+            padding: 0.35rem 0.7rem;
+            border: none; border-radius: 0.6rem;
+            font-size: 0.7rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+            flex: 1; min-width: fit-content;
+        }
+        .btn-colab-edit { background: var(--energisa-yellow); color: var(--energisa-blue); }
+        .btn-colab-edit:hover { filter: brightness(0.95); }
+        .btn-colab-pass { background: var(--energisa-blue-light); color: var(--energisa-blue); }
+        .btn-colab-pass:hover { background: var(--energisa-blue); color: white; }
+        .btn-colab-toggle { background: var(--gray-200); color: var(--gray-700); }
+        .btn-colab-toggle:hover { background: var(--gray-300); }
+        .btn-colab-del { background: #fee2e2; color: var(--danger); }
+        .btn-colab-del:hover { background: var(--danger); color: white; }
+
+        /* Profile info na barra do colaborador */
+        .profile-info-row {
+            display: flex; gap: 1rem; flex-wrap: wrap;
+            font-size: 0.8rem; color: var(--gray-600);
+        }
+        .profile-info-row span { display: flex; align-items: center; gap: 0.25rem; }
+    </style>
+</head>
+<body>
+    <!-- Tela inicial: escolha de perfil -->
+    <div id="selection-screen" class="screen">
+        <div class="choice-container">
+            <div class="logo-energisa">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">ENERGISA</span>
+            </div>
+            <h1>Gestão de Sobreaviso</h1>
+            <p>Selecione seu perfil para acessar o sistema</p>
+            <div class="choice-buttons">
+                <div class="choice-card" data-role="scada">
+                    <div class="choice-icon">🏭</div>
+                    <h3>Fábrica do SCADA</h3>
+                    <p>Colaborador da fábrica<br>Cadastrar restrições de sobreaviso</p>
+                </div>
+                <div class="choice-card" data-role="nucleo">
+                    <div class="choice-icon">📊</div>
+                    <h3>Núcleo de Gestão</h3>
+                    <p>Gerência<br>Visualizar e gerenciar restrições</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="main-app">
+        <div class="header">
+            <h1>Gestão de Restrições de Sobreaviso</h1>
+            <div class="header-subtitle">Sistema de controle de indisponibilidade para sobreaviso — v5.0</div>
+        </div>
+        <div id="dynamic-content"></div>
+    </div>
+
+    <div id="modal-root"></div>
+
+    <script>
+        (function() {
+            // ==================== CONSTANTES E STORAGE ====================
+            const STORAGE_RESTRICOES = 'restricoes_sobreaviso_v5';
+            const STORAGE_COLABORADORES = 'colaboradores_scada_v5';
+            const MANAGER_USER = "gestao";
+            const MANAGER_PASS = "energisa2024";
+            const SISTEMAS_DISPONIVEIS = ['ELIPSE', 'POWER', 'ADMS'];
+            
+            // ==================== ESTADO GLOBAL ====================
+            let restricoes = [];
+            let colaboradores = [];
+            let currentRole = null;
+            let logadoGestao = false;
+            let logadoScada = false;
+            let currentUser = null;       // colaborador SCADA logado
+            let filtroBusca = '';
+            let filtroBuscaColab = '';
+            let activeTab = 'restricoes';
+            let calendarMonth = new Date().getMonth();
+            let calendarYear = new Date().getFullYear();
+
+            // ==================== UTILITÁRIOS ====================
+            
+            function hashSenha(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash |= 0;
+                }
+                return Math.abs(hash).toString(16);
+            }
+
+            function gerarId() {
+                return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+            }
+
+            function formatarDataBR(isoDate) {
+                if (!isoDate) return '';
+                const [ano, mes, dia] = isoDate.split('-');
+                return `${dia}/${mes}/${ano}`;
+            }
+
+            function formatarHoraBR(hora) { return hora ? hora.substring(0, 5) : ''; }
+
+            function escapeHTML(str) {
+                if (!str && str !== 0) return '';
+                return String(str).replace(/[&<>"']/g, function(m) {
+                    const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+                    return map[m];
+                });
+            }
+
+            function formatarTelefone(tel) {
+                if (!tel) return '';
+                const nums = tel.replace(/\D/g, '');
+                if (nums.length === 11) return `(${nums.substring(0,2)}) ${nums.substring(2,7)}-${nums.substring(7)}`;
+                if (nums.length === 10) return `(${nums.substring(0,2)}) ${nums.substring(2,6)}-${nums.substring(6)}`;
+                return tel;
+            }
+
+            function isOvernight(inicio, fim) {
+                return fim <= inicio && fim !== '00:00';
+            }
+
+            function mostrarMensagem(texto, tipo = 'sucesso') {
+                const div = document.createElement('div');
+                div.className = 'mensagem-flutuante';
+                div.style.background = tipo === 'sucesso' ? '#10b981' : '#ef4444';
+                div.innerHTML = texto;
+                document.body.appendChild(div);
+                setTimeout(() => { div.style.opacity = '0'; div.style.transform = 'translateY(20px)'; }, 3000);
+                setTimeout(() => div.remove(), 3500);
+            }
+
+            function voltarSelecaoPerfil() {
+                document.getElementById('selection-screen').classList.remove('hidden');
+                document.getElementById('main-app').classList.remove('visible');
+                currentRole = null;
+                logadoGestao = false;
+                logadoScada = false;
+                currentUser = null;
+                activeTab = 'restricoes';
+                filtroBusca = '';
+                filtroBuscaColab = '';
+            }
+
+            // ==================== STORAGE ====================
+
+            function carregarStorage() {
+                // Carregar colaboradores
+                const colabsData = localStorage.getItem(STORAGE_COLABORADORES);
+                if (colabsData) {
+                    colaboradores = JSON.parse(colabsData);
+                } else {
+                    // Seed inicial: cria alguns colaboradores de exemplo
+                    colaboradores = [
+                        { id: 'c1', matricula: '12345', nome: 'Carlos Mendes', email: 'carlos.mendes@energisa.com.br', telefone: '83999998888', sistemas: ['ELIPSE', 'ADMS'], senhaHash: hashSenha('123456'), ativo: true, criadoEm: new Date().toISOString() },
+                        { id: 'c2', matricula: '23456', nome: 'Ana Paula Souza', email: 'ana.souza@energisa.com.br', telefone: '83988887777', sistemas: ['POWER', 'ADMS'], senhaHash: hashSenha('123456'), ativo: true, criadoEm: new Date().toISOString() },
+                        { id: 'c3', matricula: '34567', nome: 'Roberto Alves', email: 'roberto.alves@energisa.com.br', telefone: '83977776666', sistemas: ['ELIPSE', 'POWER'], senhaHash: hashSenha('123456'), ativo: true, criadoEm: new Date().toISOString() }
+                    ];
+                    salvarColaboradores();
+                }
+
+                // Carregar restrições
+                const restData = localStorage.getItem(STORAGE_RESTRICOES);
+                if (restData) {
+                    restricoes = JSON.parse(restData);
+                } else {
+                    // Migrar de versões antigas se houver
+                    const oldData = localStorage.getItem('restricoes_sobreaviso_v4') || localStorage.getItem('restricoes_sobreaviso');
+                    if (oldData) {
+                        const oldRestricoes = JSON.parse(oldData);
+                        // Vincular restrições antigas aos colaboradores via e-mail
+                        restricoes = oldRestricoes.map(r => {
+                            const colab = colaboradores.find(c => c.email.toLowerCase() === (r.email || '').toLowerCase());
+                            return {
+                                id: r.id || gerarId(),
+                                colabId: colab ? colab.id : null,
+                                nome: r.nome,
+                                email: r.email,
+                                datas: r.datas || []
+                            };
+                        });
+                    } else {
+                        // Seed inicial de restrições associadas aos colaboradores seed
+                        restricoes = [
+                            { id: '1', colabId: 'c1', nome: 'Carlos Mendes', email: 'carlos.mendes@energisa.com.br', datas: [{ data: '2026-06-10', inicio: '08:00', fim: '18:00', justificativa: 'Consulta médica' }] },
+                            { id: '2', colabId: 'c2', nome: 'Ana Paula Souza', email: 'ana.souza@energisa.com.br', datas: [{ data: '2026-06-12', inicio: '10:00', fim: '16:00', justificativa: 'Reunião familiar' }, { data: '2026-06-18', inicio: '22:00', fim: '06:00', justificativa: 'Turno noturno indisponível' }] }
+                        ];
+                    }
+                    salvarRestricoes();
+                }
+            }
+
+            function salvarRestricoes() { localStorage.setItem(STORAGE_RESTRICOES, JSON.stringify(restricoes)); }
+            function salvarColaboradores() { localStorage.setItem(STORAGE_COLABORADORES, JSON.stringify(colaboradores)); }
+
+            // ==================== MODAL SYSTEM ====================
+            function abrirModal(titulo, bodyHTML, footerHTML) {
+                fecharModal();
+                const root = document.getElementById('modal-root');
+                root.innerHTML = `
+                    <div class="modal-overlay" id="modal-overlay">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>${titulo}</h2>
+                                <button class="modal-close" id="modal-close-btn">&times;</button>
+                            </div>
+                            <div class="modal-body">${bodyHTML}</div>
+                            ${footerHTML ? `<div class="modal-footer">${footerHTML}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('modal-close-btn').addEventListener('click', fecharModal);
+                document.getElementById('modal-overlay').addEventListener('click', (e) => {
+                    if (e.target.id === 'modal-overlay') fecharModal();
+                });
+            }
+
+            function fecharModal() { document.getElementById('modal-root').innerHTML = ''; }
+
+            function confirmar(mensagem, onConfirm) {
+                abrirModal('⚠️ Confirmação', `
+                    <p style="text-align:center; font-size:1rem; color:var(--gray-700);">${mensagem}</p>
+                    <div class="confirm-actions">
+                        <button class="btn btn-outline" id="confirm-cancel">Cancelar</button>
+                        <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+                    </div>
+                `);
+                document.getElementById('confirm-cancel').addEventListener('click', fecharModal);
+                document.getElementById('confirm-ok').addEventListener('click', () => {
+                    fecharModal();
+                    onConfirm();
+                });
+            }
+
+            // ==================== AUTENTICAÇÃO SCADA ====================
+            function fazerLoginScada(matricula, senha) {
+                const colab = colaboradores.find(c =>
+                    (c.matricula === matricula.trim() || c.email.toLowerCase() === matricula.trim().toLowerCase())
+                    && c.senhaHash === hashSenha(senha)
+                );
+                if (colab && colab.ativo) {
+                    currentUser = colab;
+                    logadoScada = true;
+                    return { ok: true };
+                }
+                if (colab && !colab.ativo) {
+                    return { ok: false, motivo: 'Sua conta está desativada. Entre em contato com a gestão.' };
+                }
+                return { ok: false, motivo: 'Matrícula ou senha inválidos.' };
+            }
+
+            function fazerLoginGestao(user, pass) {
+                if (user === MANAGER_USER && pass === MANAGER_PASS) {
+                    logadoGestao = true;
+                    return true;
+                }
+                return false;
+            }
+
+            // ==================== TELA DE LOGIN SCADA ====================
+            function renderizarLoginScada() {
+                const container = document.getElementById('dynamic-content');
+                container.innerHTML = `
+                    <div class="login-card-wrapper">
+                        <div class="card">
+                            <div class="card-header"><h2>🏭 Acesso Fábrica do SCADA</h2></div>
+                            <div class="card-body">
+                                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--energisa-blue-light) 0%, var(--energisa-blue) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem;">🔒</div>
+                                <p style="text-align:center; margin-bottom:1.5rem; color: var(--gray-600);">Identifique-se para acessar suas restrições</p>
+                                <div class="form-group">
+                                    <label class="form-label">Matrícula ou e-mail <span class="required">*</span></label>
+                                    <input type="text" id="scada-login-user" class="form-input" placeholder="Ex: 12345 ou nome@energisa.com.br" autocomplete="username">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Senha <span class="required">*</span></label>
+                                    <input type="password" id="scada-login-pass" class="form-input" placeholder="••••••••" autocomplete="current-password">
+                                </div>
+                                <button id="btn-login-scada" class="btn btn-primary" style="width:100%;">Entrar</button>
+                                <button id="btn-voltar-scada-login" class="btn btn-outline" style="width:100%; margin-top:1rem;">← Voltar</button>
+                                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--gray-200); text-align: center; font-size: 0.75rem; color: var(--gray-500);">
+                                    💡 Esqueceu a senha? Solicite ao Núcleo de Gestão.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const btnLogin = document.getElementById('btn-login-scada');
+                const userInp = document.getElementById('scada-login-user');
+                const passInp = document.getElementById('scada-login-pass');
+
+                btnLogin.addEventListener('click', () => {
+                    const matricula = userInp.value.trim();
+                    const senha = passInp.value;
+
+                    if (!matricula || !senha) {
+                        userInp.classList.toggle('error', !matricula);
+                        passInp.classList.toggle('error', !senha);
+                        mostrarMensagem('❌ Preencha matrícula e senha', 'erro');
+                        return;
+                    }
+
+                    btnLogin.classList.add('btn-loading');
+                    btnLogin.textContent = 'Autenticando';
+
+                    setTimeout(() => {
+                        const result = fazerLoginScada(matricula, senha);
+                        if (result.ok) {
+                            renderizarConteudoScada();
+                        } else {
+                            btnLogin.classList.remove('btn-loading');
+                            btnLogin.textContent = 'Entrar';
+                            userInp.classList.add('error');
+                            passInp.classList.add('error');
+                            mostrarMensagem('❌ ' + result.motivo, 'erro');
+                        }
+                    }, 500);
+                });
+
+                userInp.addEventListener('keydown', (e) => { if (e.key === 'Enter') passInp.focus(); });
+                passInp.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnLogin.click(); });
+                [userInp, passInp].forEach(inp => inp.addEventListener('input', () => inp.classList.remove('error')));
+
+                document.getElementById('btn-voltar-scada-login').addEventListener('click', voltarSelecaoPerfil);
+            }
+
+            // ==================== PAINEL SCADA (PÓS-LOGIN) ====================
+            function adicionarPeriodoScada(dados = null) {
+                const wrapper = document.getElementById('periodos-scada-wrapper');
+                if (!wrapper) return;
+                
+                const periodId = Date.now() + Math.random();
+                const div = document.createElement('div');
+                div.className = 'period-card';
+                div.dataset.periodId = periodId;
+
+                const isOvn = dados && isOvernight(dados.inicio, dados.fim);
+                
+                div.innerHTML = `
+                    <div class="period-header">
+                        <span class="period-title">📅 Período ${wrapper.querySelectorAll('.period-card').length + 1}</span>
+                        <button type="button" class="remove-period" style="width: auto; padding: 0.3rem 0.8rem;">🗑️ Remover</button>
+                    </div>
+                    <div class="period-row">
+                        <div class="period-field">
+                            <label>Data <span class="required">*</span></label>
+                            <input type="date" class="form-input period-data" value="${dados?.data || ''}" min="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="period-field">
+                            <label>Início <span class="required">*</span></label>
+                            <input type="time" class="form-input period-inicio" value="${dados?.inicio || ''}">
+                        </div>
+                        <div class="period-field">
+                            <label>Fim <span class="required">*</span> ${isOvn ? '<span class="overnight-badge">🌙 Noturno</span>' : ''}</label>
+                            <input type="time" class="form-input period-fim" value="${dados?.fim || ''}">
+                        </div>
+                    </div>
+                    <div class="period-field">
+                        <label>📝 Justificativa <span class="optional-tag">opcional</span></label>
+                        <textarea class="form-input period-justif" rows="2" placeholder="Ex: Consulta médica, compromisso pessoal, etc... (opcional)">${dados?.justificativa ? escapeHTML(dados.justificativa) : ''}</textarea>
+                    </div>
+                `;
+                
+                div.querySelector('.remove-period').addEventListener('click', () => {
+                    div.remove();
+                    atualizarResumo();
+                    reordenarPeriodos();
+                });
+
+                const inicioInput = div.querySelector('.period-inicio');
+                const fimInput = div.querySelector('.period-fim');
+                const fimLabel = div.querySelector('.period-field:nth-child(3) label');
+
+                function checkOvernight() {
+                    const ini = inicioInput.value;
+                    const fim = fimInput.value;
+                    const existingBadge = fimLabel.querySelector('.overnight-badge');
+                    if (existingBadge) existingBadge.remove();
+                    if (ini && fim && isOvernight(ini, fim)) {
+                        const badge = document.createElement('span');
+                        badge.className = 'overnight-badge';
+                        badge.textContent = '🌙 Noturno';
+                        fimLabel.appendChild(badge);
+                    }
+                }
+
+                inicioInput.addEventListener('change', checkOvernight);
+                fimInput.addEventListener('change', checkOvernight);
+                
+                const inputs = div.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('change', atualizarResumo);
+                    input.addEventListener('input', () => {
+                        input.classList.remove('error');
+                        atualizarResumo();
+                    });
+                });
+                
+                wrapper.appendChild(div);
+                atualizarResumo();
+                reordenarPeriodos();
+            }
+
+            function reordenarPeriodos() {
+                const wrapper = document.getElementById('periodos-scada-wrapper');
+                if (!wrapper) return;
+                wrapper.querySelectorAll('.period-card').forEach((period, idx) => {
+                    const title = period.querySelector('.period-title');
+                    if (title) title.textContent = `📅 Período ${idx + 1}`;
+                });
+            }
+
+            function atualizarResumo() {
+                const container = document.getElementById('resumo-periodos');
+                if (!container) return;
+                
+                const periodCards = document.querySelectorAll('#periodos-scada-wrapper .period-card');
+                const periodos = [];
+                
+                periodCards.forEach(card => {
+                    const data = card.querySelector('.period-data')?.value;
+                    const inicio = card.querySelector('.period-inicio')?.value;
+                    const fim = card.querySelector('.period-fim')?.value;
+                    const justificativa = card.querySelector('.period-justif')?.value;
+                    if (data && inicio && fim) periodos.push({ data, inicio, fim, justificativa });
+                });
+                
+                if (periodos.length === 0) {
+                    container.innerHTML = '<div style="color: var(--gray-500);">Nenhum período adicionado</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${periodos.length} período(s) adicionado(s)</div>
+                    ${periodos.map(p => `
+                        <div style="font-size: 0.75rem; margin-top: 0.25rem;">
+                            📅 ${formatarDataBR(p.data)} | ⏰ ${formatarHoraBR(p.inicio)} - ${formatarHoraBR(p.fim)}
+                            ${isOvernight(p.inicio, p.fim) ? '<span class="overnight-badge">🌙</span>' : ''}
+                            ${p.justificativa ? `<span style="color: var(--gray-500);"> - ${escapeHTML(p.justificativa.substring(0, 30))}${p.justificativa.length > 30 ? '...' : ''}</span>` : ''}
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            function validarFormularioScada() {
+                const periodCards = document.querySelectorAll('#periodos-scada-wrapper .period-card');
+                const erros = [];
+
+                document.querySelectorAll('.form-input.error').forEach(el => el.classList.remove('error'));
+
+                if (periodCards.length === 0) erros.push('Adicione pelo menos um período');
+                
+                const periodos = [];
+                periodCards.forEach((card, idx) => {
+                    const dataInput = card.querySelector('.period-data');
+                    const inicioInput = card.querySelector('.period-inicio');
+                    const fimInput = card.querySelector('.period-fim');
+                    const justifInput = card.querySelector('.period-justif');
+                    const data = dataInput?.value;
+                    const inicio = inicioInput?.value;
+                    const fim = fimInput?.value;
+                    const justificativa = justifInput?.value?.trim() || '';
+
+                    if (!data) { dataInput.classList.add('error'); erros.push(`Período ${idx+1}: data obrigatória`); }
+                    if (!inicio) { inicioInput.classList.add('error'); erros.push(`Período ${idx+1}: início obrigatório`); }
+                    if (!fim) { fimInput.classList.add('error'); erros.push(`Período ${idx+1}: fim obrigatório`); }
+
+                    if (data && inicio && fim) {
+                        if (fim === inicio) {
+                            erros.push(`Período ${idx + 1}: início e fim não podem ser iguais`);
+                            inicioInput.classList.add('error');
+                            fimInput.classList.add('error');
+                        }
+                        if (data < new Date().toISOString().split('T')[0]) {
+                            erros.push(`Período ${idx + 1}: data não pode ser no passado`);
+                            dataInput.classList.add('error');
+                        }
+                        periodos.push({ data, inicio, fim, justificativa });
+                    }
+                });
+                
+                return { valid: erros.length === 0, erros, periodos };
+            }
+
+            function salvarRestricaoScada() {
+                if (!currentUser) { mostrarMensagem('❌ Sessão expirada', 'erro'); return; }
+                const { valid, erros, periodos } = validarFormularioScada();
+                if (!valid) {
+                    mostrarMensagem('❌ ' + erros.slice(0, 3).join(' • ') + (erros.length > 3 ? ` (+${erros.length - 3} erros)` : ''), 'erro');
+                    return;
+                }
+                
+                const existente = restricoes.find(r => r.colabId === currentUser.id);
+
+                if (existente) {
+                    existente.nome = currentUser.nome;
+                    existente.email = currentUser.email;
+                    existente.datas = [...existente.datas, ...periodos];
+                } else {
+                    restricoes.push({
+                        id: gerarId(),
+                        colabId: currentUser.id,
+                        nome: currentUser.nome,
+                        email: currentUser.email,
+                        datas: periodos
+                    });
+                }
+                salvarRestricoes();
+                limparFormularioScada();
+                mostrarMensagem('✅ ' + (existente ? 'Períodos adicionados!' : 'Restrição cadastrada com sucesso!'), 'sucesso');
+                carregarMinhasRestricoes();
+            }
+
+            function limparFormularioScada() {
+                document.querySelectorAll('.form-input.error').forEach(el => el.classList.remove('error'));
+                const wrapper = document.getElementById('periodos-scada-wrapper');
+                if (wrapper) {
+                    wrapper.innerHTML = '';
+                    adicionarPeriodoScada();
+                }
+                atualizarResumo();
+            }
+
+            function carregarMinhasRestricoes() {
+                const container = document.getElementById('minhas-restricoes-lista');
+                if (!container || !currentUser) return;
+
+                const minhasRestricoes = restricoes.filter(r => r.colabId === currentUser.id);
+                
+                if (minhasRestricoes.length === 0 || minhasRestricoes.every(r => r.datas.length === 0)) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div>Você ainda não cadastrou nenhuma restrição</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                minhasRestricoes.forEach(rest => {
+                    rest.datas.forEach((periodo, pIdx) => {
+                        const ovn = isOvernight(periodo.inicio, periodo.fim);
+                        html += `
+                            <div class="restriction-item">
+                                <div class="restriction-date">📅 ${formatarDataBR(periodo.data)} ${ovn ? '<span class="overnight-badge">🌙 Noturno</span>' : ''}</div>
+                                <div class="restriction-time">⏰ ${formatarHoraBR(periodo.inicio)} — ${formatarHoraBR(periodo.fim)}</div>
+                                ${periodo.justificativa ? `<div class="restriction-justify">💬 ${escapeHTML(periodo.justificativa)}</div>` : ''}
+                                <div class="restriction-actions">
+                                    <button class="btn-edit-sm" data-rest-id="${rest.id}" data-period-idx="${pIdx}">✏️ Editar</button>
+                                    <button class="btn-delete-sm" data-rest-id="${rest.id}" data-period-idx="${pIdx}">🗑️ Excluir</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+                
+                container.innerHTML = html;
+
+                container.querySelectorAll('.btn-edit-sm').forEach(btn => {
+                    btn.addEventListener('click', () => editarPeriodoModal(btn.dataset.restId, parseInt(btn.dataset.periodIdx)));
+                });
+                container.querySelectorAll('.btn-delete-sm').forEach(btn => {
+                    btn.addEventListener('click', () => excluirPeriodoColaborador(btn.dataset.restId, parseInt(btn.dataset.periodIdx)));
+                });
+            }
+
+            function excluirPeriodoColaborador(restId, periodIdx) {
+                confirmar('Deseja excluir este período de restrição?', () => {
+                    const rest = restricoes.find(r => r.id === restId);
+                    if (!rest) return;
+                    // Verificação de segurança: só o dono pode excluir
+                    if (logadoScada && rest.colabId !== currentUser?.id) {
+                        mostrarMensagem('❌ Você não tem permissão para isso', 'erro');
+                        return;
+                    }
+                    rest.datas.splice(periodIdx, 1);
+                    if (rest.datas.length === 0) restricoes = restricoes.filter(r => r.id !== restId);
+                    salvarRestricoes();
+                    if (logadoScada) carregarMinhasRestricoes();
+                    else { if (activeTab === 'restricoes') renderizarListaRestricoes(); else renderizarInsightsPainel(); }
+                    mostrarMensagem('🗑️ Período removido com sucesso', 'sucesso');
+                });
+            }
+
+            function editarPeriodoModal(restId, periodIdx) {
+                const rest = restricoes.find(r => r.id === restId);
+                if (!rest || !rest.datas[periodIdx]) return;
+                // Verificação de segurança no SCADA
+                if (logadoScada && rest.colabId !== currentUser?.id) {
+                    mostrarMensagem('❌ Você não tem permissão para editar isso', 'erro');
+                    return;
+                }
+                const periodo = rest.datas[periodIdx];
+
+                abrirModal('✏️ Editar Período', `
+                    <div class="form-group">
+                        <label class="form-label">Data</label>
+                        <input type="date" id="modal-data" class="form-input" value="${periodo.data}">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Início</label>
+                            <input type="time" id="modal-inicio" class="form-input" value="${periodo.inicio}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fim</label>
+                            <input type="time" id="modal-fim" class="form-input" value="${periodo.fim}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Justificativa <span class="optional-tag">opcional</span></label>
+                        <textarea id="modal-justif" class="form-input" rows="2" placeholder="Opcional">${escapeHTML(periodo.justificativa || '')}</textarea>
+                    </div>
+                `, `
+                    <button class="btn btn-outline" id="modal-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="modal-save">💾 Salvar</button>
+                `);
+
+                document.getElementById('modal-cancel').addEventListener('click', fecharModal);
+                document.getElementById('modal-save').addEventListener('click', () => {
+                    const novaData = document.getElementById('modal-data').value;
+                    const novoInicio = document.getElementById('modal-inicio').value;
+                    const novoFim = document.getElementById('modal-fim').value;
+                    const novaJustif = document.getElementById('modal-justif').value.trim();
+
+                    if (!novaData || !novoInicio || !novoFim) {
+                        mostrarMensagem('❌ Data, início e fim são obrigatórios', 'erro');
+                        return;
+                    }
+
+                    periodo.data = novaData;
+                    periodo.inicio = novoInicio;
+                    periodo.fim = novoFim;
+                    periodo.justificativa = novaJustif;
+                    salvarRestricoes();
+                    fecharModal();
+                    
+                    if (logadoScada) carregarMinhasRestricoes();
+                    else { if (activeTab === 'restricoes') renderizarListaRestricoes(); else renderizarInsightsPainel(); }
+                    mostrarMensagem('✅ Período atualizado', 'sucesso');
+                });
+            }
+
+            // Trocar senha do colaborador SCADA
+            function abrirModalTrocarSenha() {
+                abrirModal('🔑 Trocar Senha', `
+                    <div class="form-group">
+                        <label class="form-label">Senha atual</label>
+                        <input type="password" id="senha-atual" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nova senha</label>
+                        <input type="password" id="senha-nova" class="form-input">
+                        <div class="field-hint">Mínimo de 4 caracteres</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirmar nova senha</label>
+                        <input type="password" id="senha-conf" class="form-input">
+                    </div>
+                `, `
+                    <button class="btn btn-outline" id="senha-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="senha-save">💾 Salvar</button>
+                `);
+
+                document.getElementById('senha-cancel').addEventListener('click', fecharModal);
+                document.getElementById('senha-save').addEventListener('click', () => {
+                    const atual = document.getElementById('senha-atual').value;
+                    const nova = document.getElementById('senha-nova').value;
+                    const conf = document.getElementById('senha-conf').value;
+
+                    if (hashSenha(atual) !== currentUser.senhaHash) {
+                        mostrarMensagem('❌ Senha atual incorreta', 'erro');
+                        return;
+                    }
+                    if (nova.length < 4) {
+                        mostrarMensagem('❌ Nova senha precisa ter ao menos 4 caracteres', 'erro');
+                        return;
+                    }
+                    if (nova !== conf) {
+                        mostrarMensagem('❌ Confirmação não confere', 'erro');
+                        return;
+                    }
+
+                    const colab = colaboradores.find(c => c.id === currentUser.id);
+                    if (colab) {
+                        colab.senhaHash = hashSenha(nova);
+                        currentUser = colab;
+                        salvarColaboradores();
+                    }
+                    fecharModal();
+                    mostrarMensagem('✅ Senha atualizada com sucesso', 'sucesso');
+                });
+            }
+
+            function renderizarConteudoScada() {
+                if (!logadoScada || !currentUser) {
+                    renderizarLoginScada();
+                    return;
+                }
+
+                const container = document.getElementById('dynamic-content');
+                container.innerHTML = `
+                    <div class="user-badge-bar">
+                        <div class="user-info">
+                            <div class="user-avatar">🏭</div>
+                            <div>
+                                <strong>${escapeHTML(currentUser.nome)}</strong>
+                                <div class="profile-info-row" style="margin-top:0.25rem;">
+                                    <span>🆔 ${escapeHTML(currentUser.matricula)}</span>
+                                    <span>📧 ${escapeHTML(currentUser.email)}</span>
+                                    ${currentUser.telefone ? `<span>📞 ${escapeHTML(formatarTelefone(currentUser.telefone))}</span>` : ''}
+                                </div>
+                                <div style="margin-top:0.4rem;">
+                                    ${currentUser.sistemas.map(s => `<span class="sistema-badge sistema-${s.toLowerCase()}">${s}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header-actions">
+                            <button id="btn-trocar-senha" class="btn btn-outline">🔑 Trocar Senha</button>
+                            <button id="btn-voltar-perfil-scada" class="btn btn-outline">← Sair</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>📝 Nova Restrição de Sobreaviso</h2>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label class="form-label">📅 Períodos de Indisponibilidade</label>
+                                        <div class="periods-container" id="periodos-scada-wrapper"></div>
+                                        <button type="button" id="add-period-scada" class="btn-add-period">
+                                            ➕ Adicionar novo período
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="summary-card">
+                                        <div class="summary-title">📋 Resumo do Cadastro</div>
+                                        <div id="resumo-periodos" class="summary-periods">Nenhum período adicionado</div>
+                                    </div>
+                                    
+                                    <div class="form-actions">
+                                        <button id="salvar-scada" class="btn btn-primary">💾 Salvar Restrição</button>
+                                        <button id="limpar-scada" class="btn btn-outline">🗑️ Limpar Formulário</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>📋 Minhas Restrições</h2>
+                                    <span class="restriction-badge">Ativas</span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="minhas-restricoes-lista" class="my-restrictions-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const wrapper = document.getElementById('periodos-scada-wrapper');
+                if (wrapper && wrapper.children.length === 0) adicionarPeriodoScada();
+                
+                document.getElementById('add-period-scada')?.addEventListener('click', () => adicionarPeriodoScada());
+                document.getElementById('salvar-scada')?.addEventListener('click', salvarRestricaoScada);
+                document.getElementById('limpar-scada')?.addEventListener('click', limparFormularioScada);
+                document.getElementById('btn-trocar-senha')?.addEventListener('click', abrirModalTrocarSenha);
+                document.getElementById('btn-voltar-perfil-scada')?.addEventListener('click', voltarSelecaoPerfil);
+                
+                carregarMinhasRestricoes();
+            }
+
+            // ==================== GESTÃO: COLABORADORES ====================
+
+            function abrirModalColaborador(colab = null) {
+                const isEdit = !!colab;
+                const titulo = isEdit ? '✏️ Editar Colaborador' : '➕ Novo Colaborador';
+                
+                abrirModal(titulo, `
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Matrícula <span class="required">*</span></label>
+                            <input type="text" id="cm-matricula" class="form-input" value="${escapeHTML(colab?.matricula || '')}" placeholder="Ex: 12345" ${isEdit ? 'readonly' : ''}>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone <span class="optional-tag">opcional</span></label>
+                            <input type="tel" id="cm-telefone" class="form-input" value="${escapeHTML(colab?.telefone || '')}" placeholder="(83) 99999-8888">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nome completo <span class="required">*</span></label>
+                        <input type="text" id="cm-nome" class="form-input" value="${escapeHTML(colab?.nome || '')}" placeholder="Ex: Carlos Mendes da Silva">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-mail corporativo <span class="required">*</span></label>
+                        <input type="email" id="cm-email" class="form-input" value="${escapeHTML(colab?.email || '')}" placeholder="nome@energisa.com.br">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sistemas que pode atuar <span class="required">*</span></label>
+                        <div class="sistemas-grid">
+                            ${SISTEMAS_DISPONIVEIS.map(s => `
+                                <label class="sistema-check ${colab?.sistemas?.includes(s) ? 'checked' : ''}">
+                                    <input type="checkbox" name="sistemas" value="${s}" ${colab?.sistemas?.includes(s) ? 'checked' : ''}>
+                                    <span>${s}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ${!isEdit ? `
+                    <div class="form-group">
+                        <label class="form-label">Senha temporária <span class="required">*</span></label>
+                        <input type="text" id="cm-senha" class="form-input" placeholder="Mínimo 4 caracteres" value="123456">
+                        <div class="field-hint">O colaborador deve trocar essa senha no primeiro acesso</div>
+                    </div>
+                    ` : `
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="cm-ativo" class="form-input">
+                            <option value="true" ${colab.ativo ? 'selected' : ''}>✅ Ativo</option>
+                            <option value="false" ${!colab.ativo ? 'selected' : ''}>⛔ Inativo</option>
+                        </select>
+                    </div>
+                    `}
+                `, `
+                    <button class="btn btn-outline" id="cm-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="cm-save">💾 ${isEdit ? 'Salvar' : 'Cadastrar'}</button>
+                `);
+
+                // Atualizar visual dos checkboxes
+                document.querySelectorAll('.sistema-check input').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        cb.closest('.sistema-check').classList.toggle('checked', cb.checked);
+                    });
+                });
+
+                document.getElementById('cm-cancel').addEventListener('click', fecharModal);
+                document.getElementById('cm-save').addEventListener('click', () => {
+                    const matricula = document.getElementById('cm-matricula').value.trim();
+                    const nome = document.getElementById('cm-nome').value.trim();
+                    const email = document.getElementById('cm-email').value.trim().toLowerCase();
+                    const telefone = document.getElementById('cm-telefone').value.trim();
+                    const sistemasSelecionados = Array.from(document.querySelectorAll('.sistema-check input:checked')).map(c => c.value);
+                    
+                    const erros = [];
+                    document.querySelectorAll('#modal-root .form-input').forEach(el => el.classList.remove('error'));
+
+                    if (!matricula) { erros.push('Matrícula obrigatória'); document.getElementById('cm-matricula').classList.add('error'); }
+                    if (!nome) { erros.push('Nome obrigatório'); document.getElementById('cm-nome').classList.add('error'); }
+                    if (!email) { erros.push('E-mail obrigatório'); document.getElementById('cm-email').classList.add('error'); }
+                    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { erros.push('E-mail inválido'); document.getElementById('cm-email').classList.add('error'); }
+                    if (sistemasSelecionados.length === 0) erros.push('Selecione ao menos 1 sistema');
+
+                    // Verificar duplicidade
+                    if (!isEdit) {
+                        if (colaboradores.find(c => c.matricula === matricula)) erros.push('Matrícula já cadastrada');
+                        if (colaboradores.find(c => c.email.toLowerCase() === email)) erros.push('E-mail já cadastrado');
+                    } else {
+                        if (colaboradores.find(c => c.email.toLowerCase() === email && c.id !== colab.id)) erros.push('E-mail já cadastrado para outro colaborador');
+                    }
+
+                    if (!isEdit) {
+                        const senha = document.getElementById('cm-senha').value;
+                        if (!senha || senha.length < 4) erros.push('Senha precisa ter ao menos 4 caracteres');
+                    }
+
+                    if (erros.length > 0) {
+                        mostrarMensagem('❌ ' + erros.slice(0,3).join(' • '), 'erro');
+                        return;
+                    }
+
+                    if (isEdit) {
+                        colab.nome = nome;
+                        colab.email = email;
+                        colab.telefone = telefone;
+                        colab.sistemas = sistemasSelecionados;
+                        colab.ativo = document.getElementById('cm-ativo').value === 'true';
+                        // Atualizar restrições vinculadas (em caso de mudança de nome/email)
+                        restricoes.forEach(r => {
+                            if (r.colabId === colab.id) {
+                                r.nome = nome;
+                                r.email = email;
+                            }
+                        });
+                        salvarRestricoes();
+                    } else {
+                        const senha = document.getElementById('cm-senha').value;
+                        colaboradores.push({
+                            id: gerarId(),
+                            matricula,
+                            nome,
+                            email,
+                            telefone,
+                            sistemas: sistemasSelecionados,
+                            senhaHash: hashSenha(senha),
+                            ativo: true,
+                            criadoEm: new Date().toISOString()
+                        });
+                    }
+
+                    salvarColaboradores();
+                    fecharModal();
+                    renderizarListaColaboradores();
+                    mostrarMensagem('✅ ' + (isEdit ? 'Colaborador atualizado' : 'Colaborador cadastrado'), 'sucesso');
+                });
+            }
+
+            function abrirModalResetarSenha(colab) {
+                abrirModal(`🔑 Resetar Senha — ${escapeHTML(colab.nome)}`, `
+                    <p style="margin-bottom:1rem; color: var(--gray-600);">Defina uma nova senha temporária. O colaborador deve trocá-la no próximo acesso.</p>
+                    <div class="form-group">
+                        <label class="form-label">Nova senha temporária</label>
+                        <input type="text" id="reset-pass" class="form-input" value="123456">
+                        <div class="field-hint">Mínimo de 4 caracteres</div>
+                    </div>
+                `, `
+                    <button class="btn btn-outline" id="reset-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="reset-save">💾 Resetar</button>
+                `);
+
+                document.getElementById('reset-cancel').addEventListener('click', fecharModal);
+                document.getElementById('reset-save').addEventListener('click', () => {
+                    const novaSenha = document.getElementById('reset-pass').value;
+                    if (!novaSenha || novaSenha.length < 4) {
+                        mostrarMensagem('❌ Senha precisa ter ao menos 4 caracteres', 'erro');
+                        return;
+                    }
+                    colab.senhaHash = hashSenha(novaSenha);
+                    salvarColaboradores();
+                    fecharModal();
+                    mostrarMensagem(`✅ Senha de ${colab.nome} resetada para: ${novaSenha}`, 'sucesso');
+                });
+            }
+
+            function toggleAtivoColaborador(colab) {
+                const acao = colab.ativo ? 'desativar' : 'ativar';
+                confirmar(`Deseja ${acao} o colaborador <strong>${escapeHTML(colab.nome)}</strong>?`, () => {
+                    colab.ativo = !colab.ativo;
+                    salvarColaboradores();
+                    renderizarListaColaboradores();
+                    mostrarMensagem(`✅ Colaborador ${colab.ativo ? 'ativado' : 'desativado'}`, 'sucesso');
+                });
+            }
+
+            function excluirColaborador(colab) {
+                const temRestricoes = restricoes.some(r => r.colabId === colab.id);
+                const aviso = temRestricoes 
+                    ? `<strong>${escapeHTML(colab.nome)}</strong> possui restrições cadastradas que também serão removidas. Continuar?`
+                    : `Excluir permanentemente o colaborador <strong>${escapeHTML(colab.nome)}</strong>?`;
+                
+                confirmar(aviso, () => {
+                    colaboradores = colaboradores.filter(c => c.id !== colab.id);
+                    restricoes = restricoes.filter(r => r.colabId !== colab.id);
+                    salvarColaboradores();
+                    salvarRestricoes();
+                    renderizarListaColaboradores();
+                    mostrarMensagem('🗑️ Colaborador excluído', 'sucesso');
+                });
+            }
+
+            function renderizarListaColaboradores() {
+                const container = document.getElementById('lista-colaboradores');
+                if (!container) return;
+
+                let filtrados = colaboradores.filter(c =>
+                    c.nome.toLowerCase().includes(filtroBuscaColab.toLowerCase()) ||
+                    c.email.toLowerCase().includes(filtroBuscaColab.toLowerCase()) ||
+                    c.matricula.includes(filtroBuscaColab)
+                );
+
+                if (filtrados.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div>Nenhum colaborador encontrado</div></div>`;
+                    return;
+                }
+
+                let html = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">`;
+                filtrados.forEach(colab => {
+                    html += `
+                        <div class="colab-card">
+                            <div class="colab-header">
+                                <div>
+                                    <div class="colab-name">${escapeHTML(colab.nome)}</div>
+                                    <div class="colab-matricula">🆔 Matrícula: ${escapeHTML(colab.matricula)}</div>
+                                </div>
+                                <span class="status-badge ${colab.ativo ? 'status-ativo' : 'status-inativo'}">${colab.ativo ? '✅ Ativo' : '⛔ Inativo'}</span>
+                            </div>
+                            <div class="colab-email">📧 ${escapeHTML(colab.email)}</div>
+                            ${colab.telefone ? `<div class="colab-tel">📞 ${escapeHTML(formatarTelefone(colab.telefone))}</div>` : ''}
+                            <div class="colab-sistemas">
+                                ${(colab.sistemas || []).map(s => `<span class="sistema-badge sistema-${s.toLowerCase()}">${s}</span>`).join('')}
+                            </div>
+                            <div class="colab-actions">
+                                <button class="btn-colab-edit" data-id="${colab.id}">✏️ Editar</button>
+                                <button class="btn-colab-pass" data-id="${colab.id}">🔑 Resetar Senha</button>
+                                <button class="btn-colab-toggle" data-id="${colab.id}">${colab.ativo ? '⛔ Desativar' : '✅ Ativar'}</button>
+                                <button class="btn-colab-del" data-id="${colab.id}">🗑️ Excluir</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+                container.innerHTML = html;
+
+                container.querySelectorAll('.btn-colab-edit').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const colab = colaboradores.find(c => c.id === btn.dataset.id);
+                        if (colab) abrirModalColaborador(colab);
+                    });
+                });
+                container.querySelectorAll('.btn-colab-pass').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const colab = colaboradores.find(c => c.id === btn.dataset.id);
+                        if (colab) abrirModalResetarSenha(colab);
+                    });
+                });
+                container.querySelectorAll('.btn-colab-toggle').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const colab = colaboradores.find(c => c.id === btn.dataset.id);
+                        if (colab) toggleAtivoColaborador(colab);
+                    });
+                });
+                container.querySelectorAll('.btn-colab-del').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const colab = colaboradores.find(c => c.id === btn.dataset.id);
+                        if (colab) excluirColaborador(colab);
+                    });
+                });
+            }
+
+            // ==================== GESTÃO: RESTRIÇÕES ====================
+
+            function gerarInsights() {
+                const totalColaboradores = restricoes.length;
+                const totalPeriodos = restricoes.reduce((acc, r) => acc + r.datas.length, 0);
+                const mediaPeriodos = totalColaboradores > 0 ? (totalPeriodos / totalColaboradores).toFixed(1) : 0;
+                const ranking = [...restricoes]
+                    .map(r => ({ nome: r.nome, email: r.email, total: r.datas.length }))
+                    .sort((a, b) => b.total - a.total);
+                const datasMap = new Map();
+                restricoes.forEach(r => {
+                    r.datas.forEach(d => datasMap.set(d.data, (datasMap.get(d.data) || 0) + 1));
+                });
+                const topDatas = Array.from(datasMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                return { totalColaboradores, totalPeriodos, mediaPeriodos, ranking, topDatas, datasMap };
+            }
+
+            function exportarCSV() {
+                if (restricoes.length === 0) { mostrarMensagem('❌ Nenhuma restrição para exportar', 'erro'); return; }
+                let csv = '\uFEFF';
+                csv += 'Matrícula;Nome;E-mail;Telefone;Sistemas;Data;Início;Fim;Turno Noturno;Justificativa\n';
+                restricoes.forEach(rest => {
+                    const colab = colaboradores.find(c => c.id === rest.colabId);
+                    rest.datas.forEach(periodo => {
+                        const ovn = isOvernight(periodo.inicio, periodo.fim) ? 'Sim' : 'Não';
+                        csv += `${colab?.matricula || ''};${rest.nome};${rest.email};${colab?.telefone || ''};${(colab?.sistemas || []).join(' / ')};${formatarDataBR(periodo.data)};${periodo.inicio};${periodo.fim};${ovn};${(periodo.justificativa || '').replace(/;/g, ',')}\n`;
+                    });
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `restricoes_sobreaviso_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                mostrarMensagem('📥 CSV exportado com sucesso!', 'sucesso');
+            }
+
+            function renderizarCalendario(datasMap) {
+                const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+                const primeiroDia = new Date(calendarYear, calendarMonth, 1);
+                const ultimoDia = new Date(calendarYear, calendarMonth + 1, 0);
+                const diasNoMes = ultimoDia.getDate();
+                const inicioSemana = primeiroDia.getDay();
+
+                let html = `
+                    <div class="calendar-nav">
+                        <button id="cal-prev">◀</button>
+                        <span>${meses[calendarMonth]} ${calendarYear}</span>
+                        <button id="cal-next">▶</button>
+                    </div>
+                    <div class="calendar-grid">
+                `;
+                diasSemana.forEach(d => html += `<div class="calendar-header-cell">${d}</div>`);
+                for (let i = 0; i < inicioSemana; i++) html += '<div class="calendar-cell empty"></div>';
+                for (let dia = 1; dia <= diasNoMes; dia++) {
+                    const dataStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                    const count = datasMap.get(dataStr) || 0;
+                    let heatClass = 'heat-0';
+                    if (count === 1) heatClass = 'heat-1';
+                    else if (count === 2) heatClass = 'heat-2';
+                    else if (count === 3) heatClass = 'heat-3';
+                    else if (count >= 4) heatClass = 'heat-4';
+                    const tooltip = count > 0 ? `${count} restrição(ões) em ${formatarDataBR(dataStr)}` : '';
+                    html += `<div class="calendar-cell ${heatClass}" ${tooltip ? `data-tooltip="${tooltip}"` : ''}>${dia}</div>`;
+                }
+                html += '</div>';
+                html += `
+                    <div style="display:flex; gap:0.75rem; margin-top:0.75rem; align-items:center; justify-content:center; flex-wrap:wrap;">
+                        <span style="font-size:0.65rem; color:var(--gray-500);">Legenda:</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;font-size:0.6rem;"><span style="width:14px;height:14px;background:var(--gray-100);border-radius:3px;display:inline-block;"></span> 0</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;font-size:0.6rem;"><span style="width:14px;height:14px;background:#dbeafe;border-radius:3px;display:inline-block;"></span> 1</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;font-size:0.6rem;"><span style="width:14px;height:14px;background:#93c5fd;border-radius:3px;display:inline-block;"></span> 2</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;font-size:0.6rem;"><span style="width:14px;height:14px;background:var(--energisa-yellow);border-radius:3px;display:inline-block;"></span> 3</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;font-size:0.6rem;"><span style="width:14px;height:14px;background:var(--danger);border-radius:3px;display:inline-block;"></span> 4+</span>
+                    </div>
+                `;
+                return html;
+            }
+
+            function renderizarListaRestricoes() {
+                const container = document.getElementById('lista-restricoes');
+                if (!container) return;
+
+                let filtradas = restricoes.filter(r =>
+                    r.nome.toLowerCase().includes(filtroBusca.toLowerCase()) ||
+                    r.email.toLowerCase().includes(filtroBusca.toLowerCase())
+                );
+
+                if (filtradas.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div>Nenhuma restrição encontrada</div></div>`;
+                    return;
+                }
+
+                let html = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.2rem;">`;
+                filtradas.forEach(rest => {
+                    const colab = colaboradores.find(c => c.id === rest.colabId);
+                    html += `
+                        <div class="rest-card" style="background: white; border-radius: 1.25rem; padding: 1.25rem; border: 1px solid var(--gray-200); transition: var(--transition);">
+                            <div style="font-weight: 800; font-size: 1.1rem; color: var(--energisa-blue);">${escapeHTML(rest.nome)}</div>
+                            <div style="font-size: 0.7rem; color: var(--gray-500); margin-bottom: 0.3rem;">${colab ? '🆔 ' + escapeHTML(colab.matricula) + ' · ' : ''}${escapeHTML(rest.email)}</div>
+                            ${colab ? `<div style="margin-bottom: 0.6rem;">${(colab.sistemas || []).map(s => `<span class="sistema-badge sistema-${s.toLowerCase()}">${s}</span>`).join('')}</div>` : ''}
+                    `;
+                    rest.datas.forEach(periodo => {
+                        const ovn = isOvernight(periodo.inicio, periodo.fim);
+                        html += `
+                            <div style="background: var(--gray-100); border-radius: 0.875rem; padding: 0.6rem; margin-bottom: 0.6rem; border-left: 3px solid var(--energisa-yellow);">
+                                <div style="font-weight: 700; font-size: 0.8rem; display: flex; justify-content: space-between;">
+                                    <span>📅 ${formatarDataBR(periodo.data)} ${ovn ? '<span class="overnight-badge">🌙</span>' : ''}</span>
+                                    <span>${escapeHTML(periodo.inicio)} — ${escapeHTML(periodo.fim)}</span>
+                                </div>
+                                ${periodo.justificativa ? `<div style="font-size: 0.7rem; margin-top: 0.3rem;">💬 ${escapeHTML(periodo.justificativa)}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += `
+                            <div style="display: flex; gap: 0.6rem; margin-top: 0.8rem;">
+                                <button class="btn-edit" data-id="${rest.id}" style="flex:1; padding: 0.5rem; border-radius: 0.875rem; background: var(--energisa-yellow); border: none; cursor: pointer; transition: var(--transition);">✏️ Editar</button>
+                                <button class="btn-delete" data-id="${rest.id}" style="flex:1; padding: 0.5rem; border-radius: 0.875rem; background: #fee2e2; border: none; cursor: pointer; transition: var(--transition);">🗑️ Excluir</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+                container.innerHTML = html;
+
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', () => editarRestricaoModal(btn.dataset.id));
+                });
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', () => excluirRestricao(btn.dataset.id));
+                });
+            }
+
+            function editarRestricaoModal(id) {
+                const rest = restricoes.find(r => r.id === id);
+                if (!rest) return;
+                let periodosHTML = '';
+                rest.datas.forEach((p, idx) => {
+                    periodosHTML += `
+                        <div style="background:var(--energisa-blue-light); border-radius:0.875rem; padding:0.75rem; margin-bottom:0.75rem; border:1px solid rgba(0,58,107,0.15);">
+                            <div style="font-weight:600; font-size:0.75rem; color:var(--energisa-blue); margin-bottom:0.5rem;">Período ${idx + 1}</div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+                                <div><label style="font-size:0.65rem; font-weight:600;">Data</label><input type="date" class="form-input modal-p-data" value="${p.data}" style="padding:0.5rem;font-size:0.85rem;"></div>
+                                <div><label style="font-size:0.65rem; font-weight:600;">Início</label><input type="time" class="form-input modal-p-inicio" value="${p.inicio}" style="padding:0.5rem;font-size:0.85rem;"></div>
+                                <div><label style="font-size:0.65rem; font-weight:600;">Fim</label><input type="time" class="form-input modal-p-fim" value="${p.fim}" style="padding:0.5rem;font-size:0.85rem;"></div>
+                            </div>
+                            <div><label style="font-size:0.65rem; font-weight:600;">Justificativa <span class="optional-tag">opcional</span></label><input type="text" class="form-input modal-p-justif" value="${escapeHTML(p.justificativa || '')}" style="padding:0.5rem;font-size:0.85rem;"></div>
+                        </div>
+                    `;
+                });
+
+                abrirModal('✏️ Editar Restrição', `
+                    <div style="background:var(--gray-100); padding:0.75rem; border-radius:0.75rem; margin-bottom:1rem; font-size:0.8rem;">
+                        <strong>${escapeHTML(rest.nome)}</strong> · ${escapeHTML(rest.email)}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Períodos</label>
+                        <div id="modal-periodos">${periodosHTML}</div>
+                    </div>
+                `, `
+                    <button class="btn btn-outline" id="modal-edit-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="modal-edit-save">💾 Salvar</button>
+                `);
+
+                document.getElementById('modal-edit-cancel').addEventListener('click', fecharModal);
+                document.getElementById('modal-edit-save').addEventListener('click', () => {
+                    const datas = document.querySelectorAll('#modal-periodos .modal-p-data');
+                    const inicios = document.querySelectorAll('#modal-periodos .modal-p-inicio');
+                    const fins = document.querySelectorAll('#modal-periodos .modal-p-fim');
+                    const justifs = document.querySelectorAll('#modal-periodos .modal-p-justif');
+
+                    const novosPeriodos = [];
+                    for (let i = 0; i < datas.length; i++) {
+                        if (datas[i].value && inicios[i].value && fins[i].value) {
+                            novosPeriodos.push({
+                                data: datas[i].value,
+                                inicio: inicios[i].value,
+                                fim: fins[i].value,
+                                justificativa: justifs[i].value
+                            });
+                        }
+                    }
+                    rest.datas = novosPeriodos;
+                    if (rest.datas.length === 0) restricoes = restricoes.filter(r => r.id !== id);
+                    salvarRestricoes();
+                    fecharModal();
+                    if (activeTab === 'restricoes') renderizarListaRestricoes();
+                    else renderizarInsightsPainel();
+                    mostrarMensagem('✅ Restrição atualizada', 'sucesso');
+                });
+            }
+
+            function excluirRestricao(id) {
+                const rest = restricoes.find(r => r.id === id);
+                if (!rest) return;
+                confirmar(`Excluir permanentemente todas as restrições de <strong>${escapeHTML(rest.nome)}</strong>?`, () => {
+                    restricoes = restricoes.filter(r => r.id !== id);
+                    salvarRestricoes();
+                    if (activeTab === 'restricoes') renderizarListaRestricoes();
+                    else renderizarInsightsPainel();
+                    mostrarMensagem('🗑️ Restrição removida', 'sucesso');
+                });
+            }
+
+            function renderizarInsightsPainel() {
+                const container = document.getElementById('painel-insights');
+                if (!container) return;
+                const insights = gerarInsights();
+                
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="background: white; border-radius: 1.25rem; padding: 1.5rem; text-align: center; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 2.5rem;">👥</div>
+                            <div class="stat-value" style="font-size: 2rem; font-weight: 800;">${insights.totalColaboradores}</div>
+                            <div style="font-size: 0.85rem;">Colaboradores com restrições</div>
+                        </div>
+                        <div class="stat-card" style="background: white; border-radius: 1.25rem; padding: 1.5rem; text-align: center; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 2.5rem;">📅</div>
+                            <div class="stat-value" style="font-size: 2rem; font-weight: 800;">${insights.totalPeriodos}</div>
+                            <div style="font-size: 0.85rem;">Períodos de indisponibilidade</div>
+                        </div>
+                        <div class="stat-card" style="background: white; border-radius: 1.25rem; padding: 1.5rem; text-align: center; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 2.5rem;">📊</div>
+                            <div class="stat-value" style="font-size: 2rem; font-weight: 800;">${insights.mediaPeriodos}</div>
+                            <div style="font-size: 0.85rem;">Média por colaborador</div>
+                        </div>
+                        <div class="stat-card" style="background: white; border-radius: 1.25rem; padding: 1.5rem; text-align: center; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 2.5rem;">🏭</div>
+                            <div class="stat-value" style="font-size: 2rem; font-weight: 800;">${colaboradores.filter(c => c.ativo).length}</div>
+                            <div style="font-size: 0.85rem;">Colaboradores ativos</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="card">
+                            <div class="card-header"><h2>🏆 Mais solicitaram restrições</h2></div>
+                            <div class="card-body">
+                                <ul style="list-style: none;">
+                                    ${insights.ranking.slice(0, 5).map((item, idx) => `
+                                        <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-100);">
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <span style="font-weight: 800; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: ${idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : 'var(--gray-200)'};">${idx + 1}</span>
+                                                <div>
+                                                    <strong>${escapeHTML(item.nome)}</strong>
+                                                    <div style="font-size: 0.7rem; color: var(--gray-500);">${escapeHTML(item.email)}</div>
+                                                </div>
+                                            </div>
+                                            <span style="background: var(--energisa-blue-light); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem;">${item.total} período${item.total !== 1 ? 's' : ''}</span>
+                                        </li>
+                                    `).join('')}
+                                    ${insights.ranking.length === 0 ? '<li style="text-align:center; padding:1rem;">Nenhum dado disponível</li>' : ''}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h2>📆 Datas mais críticas</h2></div>
+                            <div class="card-body">
+                                <ul style="list-style: none;">
+                                    ${insights.topDatas.map(([data, count]) => `
+                                        <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-100);">
+                                            <span>📅 ${formatarDataBR(data)}</span>
+                                            <span style="background: var(--energisa-blue-light); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem;">${count} restrição${count !== 1 ? 'ões' : ''}</span>
+                                        </li>
+                                    `).join('')}
+                                    ${insights.topDatas.length === 0 ? '<li style="text-align:center; padding:1rem;">Nenhum dado disponível</li>' : ''}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><h2>🗓️ Mapa de Restrições</h2></div>
+                        <div class="card-body">
+                            <div id="calendar-container">${renderizarCalendario(insights.datasMap)}</div>
+                        </div>
+                    </div>
+                `;
+                attachCalNav();
+            }
+
+            function attachCalNav() {
+                const prev = document.getElementById('cal-prev');
+                const next = document.getElementById('cal-next');
+                if (prev) prev.addEventListener('click', () => {
+                    calendarMonth--;
+                    if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+                    const calContainer = document.getElementById('calendar-container');
+                    if (calContainer) calContainer.innerHTML = renderizarCalendario(gerarInsights().datasMap);
+                    attachCalNav();
+                });
+                if (next) next.addEventListener('click', () => {
+                    calendarMonth++;
+                    if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+                    const calContainer = document.getElementById('calendar-container');
+                    if (calContainer) calContainer.innerHTML = renderizarCalendario(gerarInsights().datasMap);
+                    attachCalNav();
+                });
+            }
+
+            function renderizarConteudoGestao() {
+                const container = document.getElementById('dynamic-content');
+                if (!container) return;
+
+                if (!logadoGestao) {
+                    container.innerHTML = `
+                        <div class="login-card-wrapper">
+                            <div class="card">
+                                <div class="card-header"><h2>🔐 Acesso Restrito — Núcleo de Gestão</h2></div>
+                                <div class="card-body">
+                                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--energisa-blue-light) 0%, var(--energisa-blue) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white;">👔</div>
+                                    <p style="text-align:center; margin-bottom:1.5rem;">Autentique-se para acessar o sistema de gestão</p>
+                                    <div class="form-group">
+                                        <label class="form-label">Usuário</label>
+                                        <input type="text" id="login-user" class="form-input" placeholder="Usuário">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Senha</label>
+                                        <input type="password" id="login-pass" class="form-input" placeholder="••••••••">
+                                    </div>
+                                    <button id="btn-login-gestao" class="btn btn-primary" style="width:100%;">Entrar</button>
+                                    <button id="btn-voltar-perfil" class="btn btn-outline" style="width:100%; margin-top:1rem;">← Voltar</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    const btnLogin = document.getElementById('btn-login-gestao');
+                    btnLogin.addEventListener('click', () => {
+                        const user = document.getElementById('login-user').value.trim();
+                        const pass = document.getElementById('login-pass').value;
+                        btnLogin.classList.add('btn-loading');
+                        btnLogin.textContent = 'Autenticando';
+                        setTimeout(() => {
+                            if (fazerLoginGestao(user, pass)) {
+                                renderizarConteudoGestao();
+                            } else {
+                                btnLogin.classList.remove('btn-loading');
+                                btnLogin.textContent = 'Entrar';
+                                document.getElementById('login-user').classList.add('error');
+                                document.getElementById('login-pass').classList.add('error');
+                                mostrarMensagem('❌ Credenciais inválidas', 'erro');
+                            }
+                        }, 500);
+                    });
+
+                    document.getElementById('login-pass')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnLogin.click(); });
+                    document.getElementById('login-user')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+                    ['login-user','login-pass'].forEach(id => {
+                        document.getElementById(id)?.addEventListener('input', function() { this.classList.remove('error'); });
+                    });
+                    document.getElementById('btn-voltar-perfil')?.addEventListener('click', voltarSelecaoPerfil);
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="user-badge-bar">
+                        <div class="user-info">
+                            <div class="user-avatar">📊</div>
+                            <div><strong>Núcleo de Gestão</strong><div style="font-size:0.8rem;">Gerência Estratégica</div></div>
+                            <span class="role-badge">Administrador</span>
+                        </div>
+                        <div class="header-actions">
+                            <button id="btn-exportar-csv" class="btn btn-secondary">📥 Exportar CSV</button>
+                            <button id="btn-voltar-perfil-top" class="btn btn-outline">← Sair</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: white; padding: 0.5rem; border-radius: 1rem;">
+                        <button class="nav-tab ${activeTab === 'restricoes' ? 'active' : ''}" data-tab="restricoes" style="flex:1; padding: 0.875rem; background: ${activeTab === 'restricoes' ? 'linear-gradient(135deg, var(--energisa-blue) 0%, var(--energisa-blue-dark) 100%)' : 'transparent'}; color: ${activeTab === 'restricoes' ? 'white' : 'var(--gray-600)'}; border: none; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition);">📋 Restrições</button>
+                        <button class="nav-tab ${activeTab === 'colaboradores' ? 'active' : ''}" data-tab="colaboradores" style="flex:1; padding: 0.875rem; background: ${activeTab === 'colaboradores' ? 'linear-gradient(135deg, var(--energisa-blue) 0%, var(--energisa-blue-dark) 100%)' : 'transparent'}; color: ${activeTab === 'colaboradores' ? 'white' : 'var(--gray-600)'}; border: none; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition);">👥 Colaboradores</button>
+                        <button class="nav-tab ${activeTab === 'insights' ? 'active' : ''}" data-tab="insights" style="flex:1; padding: 0.875rem; background: ${activeTab === 'insights' ? 'linear-gradient(135deg, var(--energisa-blue) 0%, var(--energisa-blue-dark) 100%)' : 'transparent'}; color: ${activeTab === 'insights' ? 'white' : 'var(--gray-600)'}; border: none; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition);">📊 Insights</button>
+                    </div>
+                    
+                    <div id="tab-restricoes" style="display: ${activeTab === 'restricoes' ? 'block' : 'none'}">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>📋 Lista de Restrições</h2>
+                                <div style="display: flex; align-items: center; background: white; border: 2px solid var(--gray-200); border-radius: 2rem; padding: 0.5rem 1rem; gap: 0.5rem; width: 300px;">
+                                    🔍 <input type="text" id="busca-restricoes" placeholder="Buscar por nome ou e-mail..." style="border: none; outline: none; width: 100%;" value="${escapeHTML(filtroBusca)}">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="lista-restricoes"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-colaboradores" style="display: ${activeTab === 'colaboradores' ? 'block' : 'none'}">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>👥 Colaboradores Cadastrados</h2>
+                                <div class="header-actions">
+                                    <div style="display: flex; align-items: center; background: white; border: 2px solid var(--gray-200); border-radius: 2rem; padding: 0.5rem 1rem; gap: 0.5rem; width: 280px;">
+                                        🔍 <input type="text" id="busca-colaboradores" placeholder="Buscar por nome, e-mail ou matrícula..." style="border: none; outline: none; width: 100%;" value="${escapeHTML(filtroBuscaColab)}">
+                                    </div>
+                                    <button id="btn-novo-colaborador" class="btn btn-primary">➕ Novo Colaborador</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="lista-colaboradores"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="tab-insights" style="display: ${activeTab === 'insights' ? 'block' : 'none'}">
+                        <div id="painel-insights"></div>
+                    </div>
+                `;
+
+                document.getElementById('btn-exportar-csv')?.addEventListener('click', exportarCSV);
+                document.getElementById('btn-voltar-perfil-top')?.addEventListener('click', voltarSelecaoPerfil);
+                document.getElementById('btn-novo-colaborador')?.addEventListener('click', () => abrirModalColaborador(null));
+                
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        activeTab = e.currentTarget.dataset.tab;
+                        renderizarConteudoGestao();
+                    });
+                });
+                
+                const buscaInput = document.getElementById('busca-restricoes');
+                if (buscaInput) {
+                    buscaInput.addEventListener('input', (e) => {
+                        filtroBusca = e.target.value;
+                        renderizarListaRestricoes();
+                    });
+                }
+
+                const buscaColabInput = document.getElementById('busca-colaboradores');
+                if (buscaColabInput) {
+                    buscaColabInput.addEventListener('input', (e) => {
+                        filtroBuscaColab = e.target.value;
+                        renderizarListaColaboradores();
+                    });
+                }
+                
+                if (activeTab === 'restricoes') renderizarListaRestricoes();
+                else if (activeTab === 'colaboradores') renderizarListaColaboradores();
+                else if (activeTab === 'insights') renderizarInsightsPainel();
+            }
+
+            function renderizarConteudoPorPerfil() {
+                if (currentRole === 'scada') renderizarConteudoScada();
+                else if (currentRole === 'nucleo') renderizarConteudoGestao();
+            }
+
+            function init() {
+                carregarStorage();
+                document.querySelectorAll('.choice-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        currentRole = card.dataset.role;
+                        document.getElementById('selection-screen').classList.add('hidden');
+                        document.getElementById('main-app').classList.add('visible');
+                        if (currentRole === 'nucleo') logadoGestao = false;
+                        if (currentRole === 'scada') { logadoScada = false; currentUser = null; }
+                        renderizarConteudoPorPerfil();
+                    });
+                });
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
